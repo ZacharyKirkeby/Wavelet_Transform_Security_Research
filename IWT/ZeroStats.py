@@ -40,6 +40,12 @@ HH_zeros = np.size(HH) - np.count_nonzero(HH)
 print("baseline total zeros")
 print(LL_zeros, LH_zeros, HH_zeros)
 
+min_zeros = min(LL_zeros, LH_zeros, HH_zeros)
+max_zeros = max(LL_zeros, LH_zeros, HH_zeros)
+
+print("Minimum number of zeros before rounding:", min_zeros)
+print("Maximum number of zeros before rounding:", max_zeros)
+
 def round_coefficients(coeffs, threshold=15):
     # Round coefficients to zero if their absolute value is below the threshold
     rounded = 0
@@ -84,6 +90,10 @@ for r in range(0, rows, block_size):
         num_zeros_LH_blocks.append(num_zeros_LH)
         num_zeros_HH_blocks.append(num_zeros_HH)
 
+
+
+
+
 plt.scatter(range(len(num_zeros_LL_blocks)), num_zeros_LL_blocks, label='LL', alpha=.5)
 plt.scatter(range(len(num_zeros_LH_blocks)), num_zeros_LH_blocks, label='LH', alpha=0.5)
 plt.scatter(range(len(num_zeros_HH_blocks)), num_zeros_HH_blocks, label='HH', alpha=0.5)
@@ -96,7 +106,13 @@ plt.xlim(0, 500)
 
 plt.show()
 
+average_zeros_LL = np.mean(num_zeros_LL_blocks)
+average_zeros_LH = np.mean(num_zeros_LH_blocks)
+average_zeros_HH = np.mean(num_zeros_HH_blocks)
 
+print("Average number of zeros in LL blocks:", average_zeros_LL)
+print("Average number of zeros in LH blocks:", average_zeros_LH)
+print("Average number of zeros in HH blocks:", average_zeros_HH)
 
 
 def reconstruct_image(coeffs, wavelet):
