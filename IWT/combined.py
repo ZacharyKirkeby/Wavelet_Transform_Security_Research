@@ -31,8 +31,6 @@ def get_run_length_encoding(image):
 
 
 def inverse_zigzag(input, vmax, hmax):
-    # print input.shape
-
     # initializing the variables
     # ----------------------------------
     h = 0
@@ -47,11 +45,10 @@ def inverse_zigzag(input, vmax, hmax):
     # ----------------------------------
 
     while ((v < vmax) and (h < hmax)):
-        # print ('v:',v,', h:',h,', i:',i)
+
         if ((h + v) % 2) == 0:  # going up
 
             if (v == vmin):
-                # print(1)
 
                 output[v, h] = input[i]  # if we got to the first line
 
@@ -63,13 +60,13 @@ def inverse_zigzag(input, vmax, hmax):
                 i = i + 1
 
             elif ((h == hmax - 1) and (v < vmax)):  # if we got to the last column
-                # print(2)
+
                 output[v, h] = input[i]
                 v = v + 1
                 i = i + 1
 
             elif ((v > vmin) and (h < hmax - 1)):  # all other cases
-                # print(3)
+
                 output[v, h] = input[i]
                 v = v - 1
                 h = h + 1
@@ -79,13 +76,13 @@ def inverse_zigzag(input, vmax, hmax):
         else:  # going down
 
             if ((v == vmax - 1) and (h <= hmax - 1)):  # if we got to the last line
-                # print(4)
+
                 output[v, h] = input[i]
                 h = h + 1
                 i = i + 1
 
             elif (h == hmin):  # if we got to the first column
-                # print(5)
+
                 output[v, h] = input[i]
                 if (v == vmax - 1):
                     h = h + 1
@@ -100,7 +97,7 @@ def inverse_zigzag(input, vmax, hmax):
                 i = i + 1
 
         if ((v == vmax - 1) and (h == hmax - 1)):  # bottom right element
-            # print(7)
+
             output[v, h] = input[i]
             break
 
@@ -119,8 +116,6 @@ def zigzag(input):
     vmax = input.shape[0]
     hmax = input.shape[1]
 
-    # print(vmax ,hmax )
-
     i = 0
 
     output = np.zeros((vmax * hmax))
@@ -131,7 +126,7 @@ def zigzag(input):
         if ((h + v) % 2) == 0:  # going up
 
             if (v == vmin):
-                # print(1)
+
                 output[i] = input[v, h]  # if we got to the first line
 
                 if (h == hmax):
@@ -142,13 +137,13 @@ def zigzag(input):
                 i = i + 1
 
             elif ((h == hmax - 1) and (v < vmax)):  # if we got to the last column
-                # print(2)
+
                 output[i] = input[v, h]
                 v = v + 1
                 i = i + 1
 
             elif ((v > vmin) and (h < hmax - 1)):  # all other cases
-                # print(3)
+
                 output[i] = input[v, h]
                 v = v - 1
                 h = h + 1
@@ -158,13 +153,13 @@ def zigzag(input):
         else:  # going down
 
             if ((v == vmax - 1) and (h <= hmax - 1)):  # if we got to the last line
-                # print(4)
+
                 output[i] = input[v, h]
                 h = h + 1
                 i = i + 1
 
             elif (h == hmin):  # if we got to the first column
-                # print(5)
+
                 output[i] = input[v, h]
 
                 if (v == vmax - 1):
@@ -175,38 +170,48 @@ def zigzag(input):
                 i = i + 1
 
             elif ((v < vmax - 1) and (h > hmin)):  # all other cases
-                # print(6)
+
                 output[i] = input[v, h]
                 v = v + 1
                 h = h - 1
                 i = i + 1
 
         if ((v == vmax - 1) and (h == hmax - 1)):  # bottom right element
-            # print(7)
+
             output[i] = input[v, h]
             break
 
-    # print ('v:',v,', h:',h,', i:',i)
     return output
 
 
-def scale(val):
-    remainder = []
-    extra = 0
-    for i in range(len(val)):
-        individual_rem = []
-        while abs(val[i]) > k:
-            individual_rem.append(val[i] % (k))
-            val[i] = val[i] // (k)
-            extra += 1
-        remainder.append(individual_rem)
-    return remainder, extra
+def scale(val, scale):
+    new_values = []
+
+    for i in range(len(val) + 1):
+        test = 0
+        if i == 0:
+            test = len(val)
+        else:
+            test = val[i - 1]
+        temporary_rem = []
+        while abs(test) > k - 2:
+            remainder = (test % (k - 1))
+            test = test // (k - 1)
+            temporary_rem.append(test)
+            temporary_rem.append(remainder)
+        if len(temporary_rem) > 0:
+            new_values.append((k - 2 + (len(temporary_rem) / 2)))
+            new_values.append(temporary_rem[len(temporary_rem) - 2])
+            for o in range(int(len(temporary_rem) / 2)):
+                new_values.append(temporary_rem[len(temporary_rem) - 2 * (o + 1) + 1])
+        else:
+            new_values.append(test)
+
+    return np.array(new_values)
 
 
 def dct(nbh, nbw, height_pad, width_pad, img, blockS, seed, oldSeed):
     pixelBlocks = []
-    remainder = []
-    scalar = []
     for i in range(nbh):
         rowInd = i * blockS + height_pad * blockS
         rowInd2 = rowInd + blockS
@@ -230,66 +235,86 @@ def dct(nbh, nbw, height_pad, width_pad, img, blockS, seed, oldSeed):
             # length.append(len(stream))
 
             # scaling the values
-            append, extra = scale(stream)
-            remainder.append(append)
-            val = XOR(stream, seed, oldSeed)
-            stream = val
+            stream = scale(stream, 0)
+            stream = XOR(stream, seed, oldSeed, 0)
 
             # stats
             coeff.append(max(abs(np.array(stream))))
             string.append(stream)
-            length.append(len(stream) + extra)
+            length.append(len(stream))
 
             pixelBlocks.append(stream)
-    return pixelBlocks, remainder
+    return pixelBlocks
 
 
-def unscale(val, remainder):
-    for i in range(len(val)):
+def unscale(val, scale):
+    answer = []
+    index = 0
+    value = 0
+    counter = 0
+    if val[index] > (k - 2):
+        revert_count = val[index] - (k - 2)
+        index += 1
+        value = val[index]
+        while (counter < revert_count):
+            index += 1
+            value = (value * (k - 1)) + val[index]
+            counter += 1
+        index += 1
+    else:
+        value = val[index]
+        index += 1
+    for i in range(int(value)):
         counter = 0
-        if len(remainder[i]) > 0:
-            while (counter < len(remainder[i])):
-                val[i] = (val[i] * (k)) + remainder[i][len(remainder[i]) - counter - 1]
+        if val[index] > (k - 2):
+            revert_count = val[index] - (k - 2)
+            index += 1
+            value = val[index]
+            while (counter < revert_count):
+                index += 1
+                value = (value * (k - 1)) + val[index]
                 counter += 1
+            answer.append(value)
+        else:
+            answer.append(val[index])
+        index += 1
+    return answer
 
 
-coeffI = []
-stringI = []
-lengthI = []
-def idct(nbh, nbw, pixels, remainder, blockS, seed, oldSeed):
+def idct(nbh, nbw, pixels, blockS, seed, oldSeed):
     img = np.zeros([nbh * blockS, nbw * blockS])
     for o in range(len(pixels)):
-        val = unXOR(pixels[o], seed, oldSeed)
-        pixels[o] = val
-        unscale(pixels[o], remainder[o])
+        stream = unXOR(pixels[o], seed, oldSeed, o)
+        pixels[o] = stream
+        stream = unscale(pixels[o], o)
+        pixels[o] = stream
 
         # stats
-        coeffI.append(max(abs(np.array(pixels[o]))))
-
-        stringI.append(np.copy(pixels[o]))
-        lengthI.append(len(pixels[o]))
+        # coeffI.append(max(abs(np.array(pixels[o]))))
+        # stringI.append(np.copy(pixels[o]))
+        # lengthI.append(len(pixels[o]))
 
         rowInd = int(o / nbw)
         colInd = (o % nbw)
         array = np.zeros(blockS * blockS).astype(int)
-        k = 0
+        r = 0
         i = 0
         j = 0
-        while k < array.shape[0]:
-            array[k] = pixels[o][i]
+        while r < array.shape[0]:
+            array[r] = pixels[o][i]
             if (i + 3 < len(pixels[o])):
                 j = int(abs(pixels[o][i + 3]))
             if j == 0:
-                k = k + 1
+                r = r + 1
             else:
-                k = k + j + 1
+                r = r + j + 1
             i = i + 2
             if i >= len(pixels[o]):
                 break
         array = np.reshape(array, (blockS, blockS))
         i = 0
         j = 0
-        k = 0
+        r = 0
         padded_img = np.zeros((blockS, blockS))
         while i < blockS:
             j = 0
@@ -303,26 +328,36 @@ def idct(nbh, nbw, pixels, remainder, blockS, seed, oldSeed):
     return img
 
 
-def XOR(val, seed, oldSeed):
+def XOR(val, seed, oldSeed, scale):
     XORMatrix = np.zeros(len(val))
     random.seed(seed)
-    XORMatrix = np.array([elem + random.uniform(0, 1) * (2 * k) for elem in
+    XORMatrix = np.array([elem + random.uniform(0, 1) * (2 * k - 2) for elem in
                           XORMatrix]).astype(int)
-    val = [elem + k for elem in val]
+    val = [elem + (k - 2) for elem in val]
+
     val = val + XORMatrix
-    val = val % (2 * k + 1)
+
+    val = val % (2 * k - 1)
+
+    val = [elem - k for elem in val]
+
     random.seed(oldSeed)
     return val
 
 
-def unXOR(val, seed, oldSeed):
+def unXOR(val, seed, oldSeed, scale):
     XORMatrix = np.zeros(len(val))
     random.seed(seed)
-    XORMatrix = np.array([elem + random.uniform(0, 1) * (2 * k) for elem in
+    XORMatrix = np.array([elem + random.uniform(0, 1) * (2 * k - 2) for elem in
                           XORMatrix]).astype(int)
+    val = [elem + k for elem in val]
+
     val = val - XORMatrix
-    val = val % (2 * k + 1)
-    val = [elem - k for elem in val]
+
+    val = val % (2 * k - 1)
+
+    val = [elem - (k - 2) for elem in val]
+
     random.seed(oldSeed)
     return val
 
@@ -394,12 +429,12 @@ nbh = 20
 nbw = 20
 height_padding = 50
 width_padding = 50
-cv2.imwrite('original.bmp', np.uint8(
+cv2.imwrite('C:\\Users\zakir\Downloads\\original.bmp', np.uint8(
     padded_img[height_padding * block_size:height_padding * block_size + nbh * block_size,
     width_padding * block_size:width_padding * block_size + nbw * block_size]))
-pixels, remainder = dct(nbh, nbw, height_padding, width_padding, padded_img, block_size, seed, oldSeed)
+pixels = dct(nbh, nbw, height_padding, width_padding, padded_img, block_size, seed, oldSeed)
 
-#---------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------#
 
 f_path = "C:\\Users\zakir\Downloads\\Peppers.png"  # put your file path here
 wavelet = 'haar'
@@ -409,6 +444,7 @@ dim1 = 512
 dim2 = 512
 
 print("Mode:", mode, "Wavelet:", wavelet, "Level:", level, "Dimensions:", dim1, "x", dim2, "Greyscale")
+
 
 def preprocess_image(image_path, dim1, dim2):
     cover_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -430,11 +466,13 @@ plt.show()
 
 print("Pixel Count: ", dim1 * dim2)
 
+
 def apply_wavelet_transform(image, wavelet, level):
     # Apply 2D discrete wavelet transform
     coefficients = pywt.wavedec2(image, wavelet, level=level)
 
     return coefficients
+
 
 print("#-------------------------------------------------------------#")
 
@@ -468,40 +506,41 @@ for r in range(0, rows, block_size):
         total_zeros = num_zeros_LL + num_zeros_LH + num_zeros_HH
         PreRoundtotal_zeros_per_block.append(total_zeros)
 
-#print("Average Zeros per 8x8", np.mean(PreRoundtotal_zeros_per_block))
+# print("Average Zeros per 8x8", np.mean(PreRoundtotal_zeros_per_block))
 
-#plt.scatter(range(len(PreRoundnum_zeros_LL_blocks)), PreRoundnum_zeros_LL_blocks, label='LL', alpha=.5)
-#plt.scatter(range(len(PreRoundnum_zeros_LH_blocks)), PreRoundnum_zeros_LH_blocks, label='LH', alpha=0.5)
-#plt.scatter(range(len(PreRoundnum_zeros_HH_blocks)), PreRoundnum_zeros_HH_blocks, label='HH', alpha=0.5)
+# plt.scatter(range(len(PreRoundnum_zeros_LL_blocks)), PreRoundnum_zeros_LL_blocks, label='LL', alpha=.5)
+# plt.scatter(range(len(PreRoundnum_zeros_LH_blocks)), PreRoundnum_zeros_LH_blocks, label='LH', alpha=0.5)
+# plt.scatter(range(len(PreRoundnum_zeros_HH_blocks)), PreRoundnum_zeros_HH_blocks, label='HH', alpha=0.5)
 
-#plt.xlabel('Block Index')
-#plt.ylabel('Number of Zeros')
-#plt.title('Occurrences of Zeros')
-#plt.legend()
-#plt.xlim(0, 500)
+# plt.xlabel('Block Index')
+# plt.ylabel('Number of Zeros')
+# plt.title('Occurrences of Zeros')
+# plt.legend()
+# plt.xlim(0, 500)
 
-#plt.show()
+# plt.show()
 
-#plt.scatter(range(len(PreRoundtotal_zeros_per_block)), PreRoundtotal_zeros_per_block)
+# plt.scatter(range(len(PreRoundtotal_zeros_per_block)), PreRoundtotal_zeros_per_block)
 
-#plt.xlabel('Block Index')
-#plt.ylabel('Total Number of Zeros')
-#plt.title('Total Zeros per 8x8 Block')
-#plt.xlim(0, 500)
-#plt.show()
+# plt.xlabel('Block Index')
+# plt.ylabel('Total Number of Zeros')
+# plt.title('Total Zeros per 8x8 Block')
+# plt.xlim(0, 500)
+# plt.show()
 
 LL_zeros = np.count_nonzero(LL == 0)
 LH_zeros = np.count_nonzero(LH == 0)
 HH_zeros = np.count_nonzero(HH == 0)
-#print("baseline total zeros: ", LL_zeros, LH_zeros, HH_zeros)
+# print("baseline total zeros: ", LL_zeros, LH_zeros, HH_zeros)
 
 min_zeros = min(LL_zeros, LH_zeros, HH_zeros)
 max_zeros = max(LL_zeros, LH_zeros, HH_zeros)
 
-#print("Minimum number of zeros before rounding:", min_zeros)
-#print("Maximum number of zeros before rounding:", max_zeros)
 
-#-------------------------------------------------------------------------------------------------------------#
+# print("Minimum number of zeros before rounding:", min_zeros)
+# print("Maximum number of zeros before rounding:", max_zeros)
+
+# -------------------------------------------------------------------------------------------------------------#
 def round_coefficients(coeffs, threshold=15):
     # Round coefficients to zero if their absolute value is below the threshold
     rounded = 0
@@ -518,11 +557,12 @@ LL_Roundedzeros = np.count_nonzero(RoundedLL == 0)
 LH_Roundedzeros = np.count_nonzero(RoundedLH == 0)
 HH_Roundedzeros = np.count_nonzero(RoundedHH == 0)
 
-#print("Rounded total zeros")
+# print("Rounded total zeros")
 print(LL_Roundedzeros, LH_Roundedzeros, HH_Roundedzeros)
 
-#print("New zeros created")
-#print((LL_Roundedzeros - LL_zeros), (LH_Roundedzeros - LH_zeros), (HH_Roundedzeros - HH_zeros))
+# print("New zeros created")
+# print((LL_Roundedzeros - LL_zeros), (LH_Roundedzeros - LH_zeros), (HH_Roundedzeros - HH_zeros))
+
 
 # Overall image statistics abstracted over data from each 8x8
 
@@ -532,12 +572,11 @@ num_zeros_HH_blocks = []
 average_per_cube = 0
 total_zeros_per_block = []
 
-
 for r in range(0, rows, block_size):
     for c in range(0, cols, block_size):
-        block_LL = LL[r:r + block_size, c:c + block_size]
-        block_LH = LH[r:r + block_size, c:c + block_size]
-        block_HH = HH[r:r + block_size, c:c + block_size]
+        block_LL = RoundedLL[r:r + block_size, c:c + block_size]
+        block_LH = RoundedLH[r:r + block_size, c:c + block_size]
+        block_HH = RoundedHH[r:r + block_size, c:c + block_size]
 
         num_zeros_LL = np.count_nonzero(block_LL == 0)
         num_zeros_LH = np.count_nonzero(block_LH == 0)
@@ -572,14 +611,12 @@ print("Average number of zeros in LH blocks:", average_zeros_LH, "Max:", maxLH, 
       , modeLH)
 print("Average number of zeros in HH blocks:", average_zeros_HH, "Max:", maxHH, "min:", minHH, "median:", medHH, "mode:"
       , modeHH)
-print(len(num_zeros_LH_blocks))
 
 plt.hist(total_zeros_per_block, bins=32, color="blue", edgecolor='black')
 plt.xlabel("Number of zeros")
 plt.ylabel("frequency")
 plt.title("Embed space per 8x8")
 plt.show()
-
 
 total_minus_zero = []
 for val in total_zeros_per_block:
@@ -608,82 +645,121 @@ plt.ylabel("frequency")
 plt.title("Histogram of Zeros per 8x8 Block HH band")
 plt.show()
 
-def sortPixel(pixels):
-    sortedPixels = sorted(pixels, key=len, reverse=TRUE)
-    return sortedPixels
+
+def sort_by_subarray_length(arrays):
+    # Get array lengths
+    array_lengths = np.array([len(arr) for arr in arrays])
+
+    # Get indices that would sort the array_lengths in descending order
+    sorted_indices = np.argsort(array_lengths)[::-1]
+
+    # Use sorted indices to reorder the original arrays
+    sorted_arrays = [arrays[i] for i in sorted_indices]
+
+    # Return sorted arrays and corresponding indices
+    return sorted_arrays, sorted_indices
 
 
-sortedPixels = sortPixel(pixels)
-print(sortedPixels[0])
-positions = []
-print(RoundedLH)
-def embed(pixels, coeffs, zeroByBlock):
-    cube_index = 0
+sortedPixels, keys = sort_by_subarray_length(pixels)
+
+# Display the result
+# print("Sorted arrays:", sortedPixels)
+# print("Corresponding indices:", keys)
+
+# valsHisto = []
+# for int in LH:
+#    if int < 14 and int > -16:
+#        valsHisto.append(int)
+
+
+def flatten_8x8_cubes(input_array):
+    dim1, dim2 = input_array.shape
+    cubes = []
+
+    # Iterate over the array in 8x8 chunks
+    for i in range(0, dim1, 8):
+        for j in range(0, dim2, 8):
+            # Extract 8x8 cube
+            cube = input_array[i:i + 8, j:j + 8]
+
+            # Flatten the cube and append to the list
+            cubes.append(cube.flatten())
+
+    # Concatenate the flattened cubes to get the final flattened array
+    flattened_array = np.concatenate(cubes)
+
+    return flattened_array
+
+
+tempLH = flatten_8x8_cubes(LH)
+
+
+def embed(pixels, zeros, LH):
     pixel_index = 0
-    x_coord = 0
-    y_coord = 0
+    zero_index = 0
     counter = 0
+    positions = []
 
-    while pixel_index < len(pixels):
-        for i in range(0, len(coeffs), 8):
-            if pixel_index >= len(pixels):
-                break
-            for j in range(0, len(coeffs), 8):
-                zero = zeroByBlock[cube_index]
-                cube_index += 1
-                if pixel_index >= len(pixels):
-                    break
-                if pixel_index + 1 >= len(pixels) and len(pixels[pixel_index]) <= zero:
-                    for x in range(len(pixels[pixel_index])):
-                        coeffs[x_coord][y_coord] = pixels[pixel_index][x] - 15
-                        counter += 1
-                        x_coord += 1
-                        if x_coord >= 255:
-                            y_coord += 1
-                            x_coord = 0
-                    positions.append(cube_index - 1)
-                elif len(pixels[pixel_index]) <= zero and zero > len(pixels[pixel_index + 1]):
-                    for x in range(len(pixels[pixel_index])):
-                        coeffs[x_coord][y_coord] = pixels[pixel_index][x] - 15
-                        counter += 1
-                        x_coord += 1
-                        if x_coord >= 255:
-                            y_coord += 1
-                            x_coord = 0
-                    positions.append(cube_index - 1)
+    for block in range(0, len(LH), 64):
+        zero = zeros[zero_index]
+        position = block
 
+        if pixel_index < len(pixels):
+            if len(pixels[pixel_index]) <= zero:
+                LH[position] = len(pixels[pixel_index])
+                position += 1
+                pixel = 0
+                for val in range(0, 64):
+                    if 15 >= LH[position] >= -15 and pixel < len(pixels[pixel_index]):
+                        # Update LH[position] with the pixel value
+                        LH[position] = pixels[pixel_index][pixel]
+                        counter += 1
+                        pixel += 1
+                    position += 1
                 pixel_index += 1
+                positions.append(zero_index)
+            zero_index += 1
+        elif pixel_index >= len(pixels):
+            LH[position] = 0
 
 
     print(counter)
+    return LH, positions
 
 
-
-# TODO figure out indexing
-
-embed(sortedPixels, RoundedLH, num_zeros_LH_blocks)
-print(len(pixels))
+# first num = num numbers to embed
+tempLH, positions = embed(sortedPixels, num_zeros_LH_blocks, tempLH)
 print(len(positions))
-print(positions)
-print(num_zeros_LH_blocks)
+
+
+
+def unflatten_8x8_cubes(flattened_array, shape):
+    dim1, dim2 = shape
+    cube_size = 8
+    num_cubes_dim1 = dim1 // cube_size
+    num_cubes_dim2 = dim2 // cube_size
+    reshaped_array = flattened_array.reshape(num_cubes_dim1, num_cubes_dim2, cube_size, cube_size)
+    original_array = np.zeros(shape)
+    for i in range(num_cubes_dim1):
+        for j in range(num_cubes_dim2):
+            original_array[i * cube_size:(i + 1) * cube_size, j * cube_size:(j + 1) * cube_size] = reshaped_array[i, j]
+
+    return original_array
+
+
+RoundedLH = unflatten_8x8_cubes(tempLH, LH.shape)
+
+
 def reconstruct_image(coeffs, wavelet):
     # Reconstruct the image from wavelet coefficients
     reconstructed_image = pywt.waverec2(coeffs, wavelet)
     return reconstructed_image
 
-baseLine = reconstruct_image(cover_coeffs, wavelet)
-plt.imshow(baseLine, cmap='gray')
-plt.title("RoundedPreEmbed")
-plt.axis('off')
-plt.show()
-print(np.count_nonzero(RoundedLH == 0))
 
 total_values = 0
 for sub_array in pixels:
     total_values += len(sub_array)
 print("Total number of values:", total_values)
-
-
 
 cover_coeffs = (RoundedLL, (RoundedLH, None, RoundedHH))
 
@@ -693,37 +769,27 @@ plt.title("RoundedEmbeded")
 plt.axis('off')
 plt.show()
 
-# note how the zeros are handled
-print("===============")
-print(RoundedLH[0])
-print(len(pixels[0]))
-
-#flattened = []
-#for val in range(len(cover_coeffs)):
-#    for vals in range(len(cover_coeffs[0])):
-#        for tup in cover_coeffs[val]:
-#            flattened.extend(tup)
-
 a = np.ravel(RoundedLH)
 b = np.ravel(RoundedHH)
 c = np.ravel(RoundedLL)
 # square root rule says 64 bins
-#plt.hist(a, bins=64, color='blue', label="LH", alpha=0.5)
-#plt.hist(b, bins=64, color='red', label="HH", alpha=0.5)
-#plt.hist(c, bins=64, color='green', label="LL", alpha=0.5)
-#plt.legend()
-#plt.xlabel("Coefficient")
-#plt.ylabel("Coefficient frequency")
-#plt.title("coefficients")
-#plt.xlim()
-#plt.show()
+# plt.hist(a, bins=64, color='blue', label="LH", alpha=0.5)
+# plt.hist(b, bins=64, color='red', label="HH", alpha=0.5)
+# plt.hist(c, bins=64, color='green', label="LL", alpha=0.5)
+# plt.legend()
+# plt.xlabel("Coefficient")
+# plt.ylabel("Coefficient frequency")
+# plt.title("coefficients")
+# plt.xlim()
+# plt.show()
 
 # Testing Reversibility
 
 
-
 new_coeffs = apply_wavelet_transform(cover, wavelet, level)
 LL, LH, HH = new_coeffs[0], new_coeffs[1][0], new_coeffs[1][1]
+
+
 
 def compare_arrays(original, embed, threshold=0.0001):
     if len(original) != len(embed):
@@ -732,9 +798,10 @@ def compare_arrays(original, embed, threshold=0.0001):
         if len(a1) != len(a2):
             return False
         for x1, x2 in zip(a1, a2):
-            if abs(x1 - x2) > threshold:
+            if np.round(x1) - np.round(x2) > 0:
                 return False
     return True
+
 
 print(compare_arrays(RoundedLH, LH))
 
@@ -747,7 +814,72 @@ plt.title("ReConstructed")
 plt.axis('off')
 plt.show()
 
-# TODO sorting 8x8 to 8x8, assign biuggest space reqs first
-# change to a sort find
-# biggest duland, sequential mine, biggest first, smallest last
-# restrict to availible space must be larger than next smallest
+flatLH = flatten_8x8_cubes(LH)
+
+def undo_embed(LH):
+    embedded_pixels = []
+    counter = 0
+
+    for blocks in range(0, len(LH), 64):
+        block_start = blocks + 1
+        num_extract = 0
+        position = block_start
+        # Extract the number of embedded values from the first element of the block
+        if block_start >= len(LH):
+            break
+        num_embedded_values = np.round(LH[blocks])
+        # If there are embedded values, extract the subarray
+        if num_embedded_values > 0:
+            embedded_block = []
+            for i in range(block_start, block_start + 64):
+                if num_extract >= num_embedded_values:
+                    break
+                if -15 <= np.round(LH[i]) <= 15:
+                    embedded_block.append(LH[position])  # Append to embedded_pixels
+                    num_extract += 1
+                    counter += 1
+                position += 1  # Move this line inside the loop
+            embedded_pixels.append(embedded_block)
+    print("Num extracted", counter)
+    return embedded_pixels
+
+
+
+
+
+OrderPixel = undo_embed(flatLH)
+
+
+check = []
+sortedPixels, keys = sort_by_subarray_length(pixels)
+for x in range(len(pixels)):
+    check.append(np.max(pixels[x]))
+
+print(np.max(check))
+
+
+def unsort_by_subarray_length(sorted_arrays, sorted_indices):
+    # Create a mapping from sorted indices to original indices
+    original_indices = np.argsort(sorted_indices)
+
+    # Use the mapping to unsort the sorted arrays
+    unsorted_arrays = [sorted_arrays[i] for i in original_indices]
+
+    return unsorted_arrays
+
+OrderPixel = unsort_by_subarray_length(OrderPixel, keys)
+print(len(OrderPixel))
+
+
+
+
+# NOTES
+
+# positions - goes left to right, each entry represents a cube
+# keys is the original position for the pixels values prior to be resorted
+
+# TODO reverse everything
+
+
+
+# np.round(Order_pixels)
