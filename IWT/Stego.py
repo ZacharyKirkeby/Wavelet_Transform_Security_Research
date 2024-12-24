@@ -4,8 +4,8 @@ import pywt
 import cv2
 import matplotlib.pyplot as plt
 
-f_path = "C:\\Users\zakir\Downloads\\lena.png"
-#m_path = "C:\\Users\zakir\Downloads\git(1).png"
+f_path = "<Image_1>"
+m_path = "<Image_2>"
 
 wavelet = 'haar'
 mode = 'symmetric'
@@ -23,16 +23,16 @@ def preprocess_image(image_path, dim1, dim2 ):
 
 
 f = preprocess_image(f_path, dim1, dim2)
-#m = preprocess_image(m_path, dim1, dim2)
+m = preprocess_image(m_path, dim1, dim2)
 
 plt.imshow(f, cmap='gray')
 plt.title("Cover Image")
 plt.axis('off')
 plt.show()
-#plt.imshow(m,cmap='gray')
-#plt.title("Secret")
-#plt.axis('off')
-#plt.show()
+plt.imshow(m,cmap='gray')
+plt.title("Secret")
+plt.axis('off')
+plt.show()
 
 def apply_wavelet_transform(image, wavelet, level):
     # Apply 2D discrete wavelet transform
@@ -64,7 +64,7 @@ def embed_secret_information(cover_coeffs, secret_coeffs, embedding_strength):
     return stego_coeffs
 
 
-#steg_coeffs = embed_secret_information(cover_coeffs, secret_coeffs, embed_strength)
+steg_coeffs = embed_secret_information(cover_coeffs, secret_coeffs, embed_strength)
 
 def reconstruct_image(coeffs, wavelet):
     # Reconstruct the image from wavelet coefficients
@@ -73,7 +73,7 @@ def reconstruct_image(coeffs, wavelet):
     return reconstructed_image
 
 cover = reconstruct_image(cover_coeffs, wavelet)
-#steggo_image = reconstruct_image(steg_coeffs, wavelet)
+steggo_image = reconstruct_image(steg_coeffs, wavelet)
 
 plt.imshow(cover, cmap='gray')
 plt.title("Cover Image")
