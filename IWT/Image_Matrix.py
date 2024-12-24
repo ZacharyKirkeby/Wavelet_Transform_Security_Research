@@ -3,7 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 from PIL import Image
 
-f_path = "C:\\Users\zakir\Downloads\\lena.png"  # put your file path here
+f_path = "<File_Path_Here>"  # put your file path here
 
 dim1 = 512
 dim2 = 512
