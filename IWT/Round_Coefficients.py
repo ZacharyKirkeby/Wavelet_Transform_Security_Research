@@ -3,7 +3,7 @@ import pywt
 import cv2
 import matplotlib.pyplot as plt
 
-f_path = "C:\\Users\zakir\Downloads\\Peppers.png"  # put your file path here
+f_path = "<Your_File_Path>"  # put your file path here
 wavelet = 'haar'
 mode = 'symmetric'
 level = 1
