@@ -3,7 +3,10 @@ import pywt
 import cv2
 import matplotlib.pyplot as plt
 
-f_path = "C:\\Users\zakir\Downloads\\lena.png" #put your file path here
+f_path = "<File_Path_Here>" #put your file path here
+
+# Wavelet function settings
+
 wavelet = 'haar'
 mode = 'symmetric'
 level = 3
