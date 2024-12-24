@@ -390,7 +390,7 @@ QUANTIZATION_MAT[QUANTIZATION_MAT == 0] = 1
 print("Level: " + str(quality))
 
 # reading image in grayscale style
-img = cv2.imread('C:\\Users\zakir\Downloads\\original_cat.png', cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('<Path>', cv2.IMREAD_GRAYSCALE)
 
 # get size of the image
 [h, w] = img.shape
@@ -429,14 +429,14 @@ nbh = 20
 nbw = 20
 height_padding = 50
 width_padding = 50
-cv2.imwrite('C:\\Users\zakir\Downloads\\original.bmp', np.uint8(
+cv2.imwrite('<Path>', np.uint8(
     padded_img[height_padding * block_size:height_padding * block_size + nbh * block_size,
     width_padding * block_size:width_padding * block_size + nbw * block_size]))
 pixels = dct(nbh, nbw, height_padding, width_padding, padded_img, block_size, seed, oldSeed)
 
 # ---------------------------------------------------------------------------------------------------------------------#
 
-f_path = "C:\\Users\zakir\Downloads\\Peppers.png"  # put your file path here
+f_path = "<Path>"  # put your file path here
 wavelet = 'haar'
 mode = 'symmetric'
 level = 1
