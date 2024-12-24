@@ -1,6 +1,6 @@
-# CYNICS
+# IWT Security Research
 
-Collection of code I wrote as a part of my time supporting the CYNICS group. All code is loose prototype work focused on testing the plausability and shortcomings of different methods. 
+Collection of code I wrote as a part of my time supporting the CYNICS group. All code is loose prototype work focused on testing the plausability and shortcomings of different methods. The code itself is all PoC, without any supporting systems for data collection/processing. Wavelet Transform functions make up the core of the files, primarily used for stegonography and fingerprinting. The end goal of this collection of code is/was implementation within ICS systems for constant data monitoring/fingerprinting. 
 
 ## IWT
 
